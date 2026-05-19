@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-120 -120 240 240">
+  <rect x="-120" y="-120" width="240" height="240" rx="40" fill="#0A0A0A"/>
+  <g fill="#ED9221">
+    <rect x="-5" y="-100" width="10" height="55" rx="3"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(22.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(45)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(67.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(90)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(112.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(135)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(157.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(180)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(202.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(225)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(247.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(270)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(292.5)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(315)"/>
+    <rect x="-5" y="-100" width="10" height="55" rx="3" transform="rotate(337.5)"/>
+  </g>
+</svg>
