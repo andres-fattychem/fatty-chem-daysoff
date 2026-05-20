@@ -132,10 +132,24 @@ Share the Vercel URL and the admin password with your office admins. They can bo
 ## How approvers use the system
 
 1. Admin fills the form in the app on behalf of the employee.
-2. An email lands in **every approver's** inbox with the request details and two buttons: **Approve** and **Reject**.
+2. An email lands in **every approver's** inbox with the request details and two buttons: **Approve** and **Reject**. The employee (if they have an email on file) also gets a "submitted, pending approval" notification.
 3. Clicking either button opens a confirmation page. No login required from the email — the link itself is signed and single-purpose.
 4. **The first response wins.** If admin A clicks Approve and admin B clicks Reject five seconds later, admin A's approval is locked in and admin B sees "Already decided — confirmed on May 15, 2:14 PM. The first response from any admin is final, so no change was made." This is enforced at the database level with a conditional update, so the result is deterministic even if two admins click at the exact same instant.
-5. If no approver ever acts and the requested date arrives, the daily cron auto-confirms the request.
+5. As soon as the decision is made (by an approver, in-app, or by the auto-confirm cron), the employee gets a notification email with the result, and the other admins get a brief FYI so they don't waste time looking at it.
+6. If no approver ever acts and the requested date arrives, the daily cron auto-confirms the request.
+
+## Notification matrix
+
+| Event | Notifies | Subject |
+|---|---|---|
+| Request submitted | All approvers | `[Days Off] [name] — [type] [dates]` |
+| Request submitted | The employee | `Your time-off request has been submitted — [dates]` |
+| Request approved | The employee | `Your time-off is confirmed — [dates]` |
+| Request rejected | The employee | `Your time-off request was not approved — [dates]` |
+| Decision made by one admin | The other admins | `[Days Off · FYI] [name] — approved/rejected [dates]` |
+| Auto-confirmed by cron | The employee + all admins | Employee gets "confirmed" email; admins get FYI |
+
+Employee notifications are skipped silently if the employee record has no email address — add their email on the Employees page to enable them.
 
 ### Adding or removing approvers
 

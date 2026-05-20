@@ -2,6 +2,10 @@ import { verifyActionToken } from "@/lib/tokens";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { FattyChemMark } from "@/components/Logo";
+import {
+  sendDecisionEmployeeEmail,
+  sendDecisionOtherAdminsEmail,
+} from "@/lib/email";
 
 type Search = { token?: string };
 
@@ -73,6 +77,34 @@ export default async function DecisionPage({
 
   // We won the race
   if (updateResult.rowsAffected > 0) {
+    // Re-fetch the employee record (needed for notifications)
+    const empRes = await db().execute({
+      sql: "SELECT * FROM employees WHERE id = ?",
+      args: [reqRow.employee_id],
+    });
+    const employee: any = empRes.rows[0];
+
+    // Fire notifications in parallel — failures here shouldn't block the
+    // confirmation page from rendering successfully.
+    if (employee) {
+      const updatedReq = { ...reqRow, status: newStatus };
+      Promise.all([
+        sendDecisionEmployeeEmail({
+          request: updatedReq,
+          employee,
+          isApproval: act === "approve",
+        }),
+        sendDecisionOtherAdminsEmail({
+          request: updatedReq,
+          employee,
+          newStatus,
+          decidedVia: "email",
+        }),
+      ]).catch(() => {
+        /* logging happens inside the email functions */
+      });
+    }
+
     return Result({
       ok: true,
       isApproval: act === "approve",
@@ -80,8 +112,8 @@ export default async function DecisionPage({
         act === "approve" ? "Request confirmed" : "Request rejected",
       message:
         act === "approve"
-          ? `${reqRow.employee_name}'s time-off request has been confirmed. Thanks for the quick response.`
-          : `${reqRow.employee_name}'s time-off request has been marked as rejected.`,
+          ? `${reqRow.employee_name}'s time-off request has been confirmed. ${employee?.email ? "They'll receive an email letting them know." : ""}`
+          : `${reqRow.employee_name}'s time-off request has been marked as rejected. ${employee?.email ? "They'll receive an email letting them know." : ""}`,
     });
   }
 

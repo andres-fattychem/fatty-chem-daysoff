@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
+import {
+  sendDecisionEmployeeEmail,
+  sendDecisionOtherAdminsEmail,
+} from "@/lib/email";
 
 // PATCH: in-app approve/reject/cancel by logged-in admin
 export async function PATCH(
@@ -20,10 +24,52 @@ export async function PATCH(
   if (!allowed.includes(status))
     return NextResponse.json({ error: "Bad status" }, { status: 400 });
 
+  // Get current state before mutating so we can decide whether notifications
+  // are warranted (only when status actually transitions to confirmed/rejected
+  // from pending).
+  const before = await db().execute({
+    sql: "SELECT * FROM requests WHERE id = ?",
+    args: [id],
+  });
+  const beforeRow: any = before.rows[0];
+  const wasPending = beforeRow?.status === "pending";
+
   await db().execute({
     sql: `UPDATE requests SET status = ?, decided_at = datetime('now'), decided_by = ?, auto_approved = 0 WHERE id = ?`,
     args: [status, decided_by || "admin (in-app)", id],
   });
+
+  // Notify if a pending request just got decided (approved or rejected)
+  if (
+    wasPending &&
+    (status === "confirmed" || status === "rejected") &&
+    beforeRow
+  ) {
+    const empRes = await db().execute({
+      sql: "SELECT * FROM employees WHERE id = ?",
+      args: [beforeRow.employee_id],
+    });
+    const employee: any = empRes.rows[0];
+    if (employee) {
+      const updatedReq = { ...beforeRow, status };
+      Promise.all([
+        sendDecisionEmployeeEmail({
+          request: updatedReq,
+          employee,
+          isApproval: status === "confirmed",
+        }),
+        sendDecisionOtherAdminsEmail({
+          request: updatedReq,
+          employee,
+          newStatus: status,
+          decidedVia: "in-app",
+        }),
+      ]).catch(() => {
+        /* notifications best-effort */
+      });
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }
 

@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import { businessDaysInclusive } from "@/lib/dates";
-import { sendApprovalEmail } from "@/lib/email";
+import {
+  sendApprovalEmail,
+  sendRequestSubmittedEmployeeEmail,
+} from "@/lib/email";
 
 export async function GET(req: Request) {
   if (!(await isAdmin()))
@@ -113,15 +116,16 @@ export async function POST(req: Request) {
   });
   const employee = empRes.rows[0] as any;
 
-  // Send approval email (non-blocking failure: still return success)
-  const emailResult = await sendApprovalEmail({
-    request: reqRow,
-    employee,
-  });
+  // Send approver email + employee notification in parallel
+  const [approverResult, employeeResult] = await Promise.all([
+    sendApprovalEmail({ request: reqRow, employee }),
+    sendRequestSubmittedEmployeeEmail({ request: reqRow, employee }),
+  ]);
 
   return NextResponse.json({
     id: newId,
-    email_sent: emailResult.ok,
-    email_error: emailResult.error,
+    email_sent: approverResult.ok,
+    email_error: approverResult.error,
+    employee_notified: employeeResult.ok && !employeeResult.skipped,
   });
 }
