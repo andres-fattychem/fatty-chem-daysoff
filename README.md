@@ -239,3 +239,5 @@ Open `tailwind.config.ts` — all colors live under `theme.extend.colors.brand` 
 **"Wrong password" but you typed it right** — `ADMIN_PASSWORD_HASH` must be the *bcrypt hash*, not the plain password. Re-run `npm run hash:password "yourpass"` and paste the full output.
 
 **Calendar is empty** — Either no requests yet, or the year filter is hiding them. Submit a test request to verify.
+
+
