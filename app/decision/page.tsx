@@ -113,7 +113,7 @@ function Result(props: {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="bg-ink px-8 py-6 flex items-center gap-3">
-          <FattyChemMark size={28} className="text-brand" />
+          <FattyChemMark size={32} variant="white" />
           <div className="flex flex-col leading-none">
             <span className="text-brand text-base font-semibold tracking-tight">
               fattychem

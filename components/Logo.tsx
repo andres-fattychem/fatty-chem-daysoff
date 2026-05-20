@@ -1,40 +1,57 @@
-// Inline SVG of the Fatty Chem sunburst mark.
-// Uses currentColor so it inherits the parent text color — works on white
-// surfaces (set className="text-brand") or on the dark inverted nav
-// (text-brand-light against ink background). To swap in the official
-// raster/SVG logo file, see README → "Customizing the logo".
+// Fatty Chem brand assets.
+//
+// The official logo PNGs have BLACK backgrounds, so they look best on
+// surfaces that are already dark (bg-ink / #0A0A0A). For light surfaces
+// or contexts where image loading is unreliable (e.g. transactional email),
+// use the styled <FattyChemWordmark /> instead.
 
 export function FattyChemMark({
   className = "",
-  size = 28,
+  size = 32,
+  variant = "white",
 }: {
   className?: string;
   size?: number;
+  variant?: "white" | "orange";
 }) {
+  const src =
+    variant === "white"
+      ? "/fatty-chem-mark-white.png"
+      : "/fatty-chem-mark-orange.png";
   return (
-    <svg
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
       width={size}
       height={size}
-      viewBox="-120 -120 240 240"
-      fill="currentColor"
-      aria-hidden="true"
+      alt="Fatty Chem"
       className={className}
-    >
-      {Array.from({ length: 16 }).map((_, i) => (
-        <rect
-          key={i}
-          x="-5"
-          y="-105"
-          width="10"
-          height="58"
-          rx="3"
-          transform={`rotate(${(360 / 16) * i})`}
-        />
-      ))}
-    </svg>
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
+export function FattyChemFullLogo({
+  className = "",
+  width = 280,
+}: {
+  className?: string;
+  width?: number;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/fatty-chem-logo-full.png"
+      width={width}
+      alt="Fatty Chem · Byproducts"
+      className={className}
+      style={{ height: "auto" }}
+    />
+  );
+}
+
+// Styled HTML wordmark — used when the image asset isn't appropriate
+// (e.g. inside email HTML where remote images get blocked by default).
 export function FattyChemWordmark({
   className = "",
   showByproducts = false,
@@ -50,26 +67,6 @@ export function FattyChemWordmark({
           BYPRODUCTS
         </span>
       )}
-    </span>
-  );
-}
-
-export function FattyChemLogo({
-  className = "",
-  iconSize = 28,
-  showByproducts = false,
-}: {
-  className?: string;
-  iconSize?: number;
-  showByproducts?: boolean;
-}) {
-  return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <FattyChemMark size={iconSize} className="text-brand shrink-0" />
-      <FattyChemWordmark
-        className="text-brand"
-        showByproducts={showByproducts}
-      />
     </span>
   );
 }

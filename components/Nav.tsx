@@ -25,7 +25,7 @@ export default function Nav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <FattyChemMark size={28} className="text-brand" />
+            <FattyChemMark size={32} variant="white" />
             <span className="flex flex-col leading-none">
               <span className="font-semibold text-brand tracking-tight text-[15px]">
                 fattychem

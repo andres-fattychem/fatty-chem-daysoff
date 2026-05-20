@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FattyChemMark } from "@/components/Logo";
+import { FattyChemFullLogo } from "@/components/Logo";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
@@ -31,23 +31,9 @@ export default function LoginPage() {
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
       {/* Brand panel */}
       <div className="bg-ink text-white flex flex-col items-center justify-center px-8 py-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none">
-          <FattyChemMark
-            size={900}
-            className="text-brand absolute -right-60 -bottom-60"
-          />
-        </div>
         <div className="relative flex flex-col items-center">
-          <FattyChemMark size={120} className="text-brand mb-6" />
-          <div className="flex flex-col items-center">
-            <span className="text-brand text-4xl font-semibold tracking-tight">
-              fattychem
-            </span>
-            <span className="text-[11px] tracking-[0.35em] text-slate-400 mt-1">
-              BYPRODUCTS
-            </span>
-          </div>
-          <p className="mt-10 text-slate-300 text-sm max-w-xs text-center">
+          <FattyChemFullLogo width={360} className="mb-2" />
+          <p className="mt-8 text-slate-300 text-sm max-w-xs text-center">
             Days Off Planner — internal scheduling for the office team.
           </p>
         </div>

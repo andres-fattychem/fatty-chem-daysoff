@@ -205,24 +205,21 @@ vercel.json               Cron configuration
 
 ## Customizing the logo
 
-The app currently uses a clean SVG recreation of the Fatty Chem sunburst mark — sampled colors from your brand (orange `#ED9221` on near-black `#0A0A0A`). If you'd rather use the official logo file (e.g. a high-res PNG or the original SVG from your designer):
+The app uses the official Fatty Chem brand assets stored in `public/`:
 
-1. Drop your file into `public/` as `fatty-chem-logo.png` (or `.svg`).
-2. Open `components/Logo.tsx`. In the `FattyChemMark` component, replace the inline SVG with:
-   ```tsx
-   <img
-     src="/fatty-chem-logo.png"
-     alt="Fatty Chem"
-     width={size}
-     height={size}
-     className={className}
-   />
-   ```
-3. For the approval email's logo, open `lib/email.ts` and replace the brand-mark `<div>` (the orange circle) with:
-   ```html
-   <img src="${process.env.NEXT_PUBLIC_APP_URL}/fatty-chem-logo.png" width="34" height="34" alt="Fatty Chem" style="display:block;" />
-   ```
-   Note: email clients block remote images by default, so the recipient may need to click "Display images" the first time.
+- `fatty-chem-logo-full.png` — full lockup (sunburst + "fattychem" + "BYPRODUCTS"). Used on the login screen.
+- `fatty-chem-mark-orange.png` — orange sunburst icon only. Used as the favicon.
+- `fatty-chem-mark-white.png` — white sunburst icon only. Used in the top navigation bar and the email-decision landing page.
+
+To replace any of them, just drop a new file into `public/` with the same filename. The whole app will pick it up on the next deploy — no code changes required.
+
+If you want to use a different variant in a specific place (e.g. switch the nav from white to orange):
+
+- Open `components/Nav.tsx`, find `<FattyChemMark variant="white" />`, change to `variant="orange"`.
+
+### About the approval email
+
+The email keeps a CSS-only brand mark (an orange disc + "fattychem" text on a black bar) rather than embedding the logo PNG, because most email clients (Outlook in particular) block remote images by default. If you want to switch to using the actual logo image in emails, edit `lib/email.ts` — replace the `<div>` brand-mark with an `<img>` tag pointing at `${process.env.NEXT_PUBLIC_APP_URL}/fatty-chem-mark-orange.png`. Recipients will need to click "Display images" the first time the email arrives.
 
 ### Changing brand colors
 

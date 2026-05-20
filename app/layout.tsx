@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Fatty Chem · Days Off Planner",
   description: "Internal scheduling tool for employee time off",
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/fatty-chem-mark-orange.png", type: "image/png" }],
   },
 };
 
