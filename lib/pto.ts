@@ -41,7 +41,7 @@ export function calculatePtoDays(
   asOf: Date = new Date()
 ): number {
   const years = yearsEmployed(startDate, asOf);
-  let days = PTO_TIERS[0].days;
+  let days: number = PTO_TIERS[0].days;
   for (const tier of PTO_TIERS) {
     if (years >= tier.minYears) days = tier.days;
   }
