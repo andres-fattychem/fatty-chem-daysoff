@@ -1,15 +1,53 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  calculatePtoDays,
+  yearsEmployed,
+  nextTierDate,
+  daysUntilNextTier,
+} from "@/lib/pto";
 
 type Employee = {
   id: number;
   full_name: string;
   email: string | null;
   department: string | null;
+  start_date: string | null;
   annual_pto_days: number;
   active: number;
 };
+
+function formatDateShort(iso: string | null): string {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function formatNextTier(emp: Employee): React.ReactNode {
+  const next = nextTierDate(emp.start_date);
+  if (!next) {
+    if (!emp.start_date) return <span className="text-slate-400">—</span>;
+    return <span className="text-slate-400">Top tier</span>;
+  }
+  const days = daysUntilNextTier(emp.start_date);
+  const formatted = next.date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const soon = days !== null && days <= 90;
+  return (
+    <span className={soon ? "text-amber-700 font-medium" : "text-slate-600"}>
+      {next.newDays} days on {formatted}
+      {soon && days !== null && (
+        <span className="text-xs text-amber-600 block">
+          {days === 0 ? "Today" : `in ${days} days`}
+        </span>
+      )}
+    </span>
+  );
+}
 
 export default function EmployeesUI({ initial }: { initial: Employee[] }) {
   const router = useRouter();
@@ -62,7 +100,11 @@ export default function EmployeesUI({ initial }: { initial: Employee[] }) {
       </div>
 
       {showForm && (
-        <EmployeeForm employee={editing} onDone={done} onCancel={() => setShowForm(false)} />
+        <EmployeeForm
+          employee={editing}
+          onDone={done}
+          onCancel={() => setShowForm(false)}
+        />
       )}
 
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -71,61 +113,92 @@ export default function EmployeesUI({ initial }: { initial: Employee[] }) {
             <tr>
               <th className="text-left px-4 py-3 font-medium">Name</th>
               <th className="text-left px-4 py-3 font-medium">Department</th>
-              <th className="text-left px-4 py-3 font-medium">Email</th>
+              <th className="text-left px-4 py-3 font-medium">Start date</th>
+              <th className="text-right px-4 py-3 font-medium">Years</th>
               <th className="text-right px-4 py-3 font-medium">Annual PTO</th>
+              <th className="text-left px-4 py-3 font-medium">Next tier</th>
               <th className="text-right px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {initial.map((emp) => (
-              <tr
-                key={emp.id}
-                className={`border-b border-slate-100 last:border-0 ${
-                  emp.active ? "" : "opacity-50"
-                }`}
-              >
-                <td className="px-4 py-3 font-medium text-slate-900">
-                  {emp.full_name}
-                  {!emp.active && (
-                    <span className="ml-2 text-xs text-slate-500">
-                      (inactive)
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {emp.department || "—"}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {emp.email || "—"}
-                </td>
-                <td className="px-4 py-3 text-right text-slate-700 tabular-nums">
-                  {emp.annual_pto_days}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => startEdit(emp)}
-                    className="text-xs text-brand hover:underline mr-3"
-                  >
-                    Edit
-                  </button>
-                  {emp.active ? (
+            {initial.map((emp) => {
+              const years = yearsEmployed(emp.start_date);
+              const currentPto = emp.start_date
+                ? calculatePtoDays(emp.start_date)
+                : emp.annual_pto_days;
+              const isStale =
+                emp.start_date && currentPto !== emp.annual_pto_days;
+              return (
+                <tr
+                  key={emp.id}
+                  className={`border-b border-slate-100 last:border-0 ${
+                    emp.active ? "" : "opacity-50"
+                  }`}
+                >
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-slate-900">
+                      {emp.full_name}
+                      {!emp.active && (
+                        <span className="ml-2 text-xs text-slate-500">
+                          (inactive)
+                        </span>
+                      )}
+                    </div>
+                    {emp.email && (
+                      <div className="text-xs text-slate-500">
+                        {emp.email}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-slate-700">
+                    {emp.department || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-700">
+                    {formatDateShort(emp.start_date)}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums text-slate-700">
+                    {emp.start_date ? years : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    <span className="font-medium">{currentPto}</span>
+                    {isStale && (
+                      <span
+                        className="ml-1 text-amber-600 text-xs"
+                        title={`Stored value (${emp.annual_pto_days}) is out of date. Edit & save to refresh.`}
+                      >
+                        ⚠
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    {formatNextTier(emp)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
                     <button
-                      onClick={() => deactivate(emp)}
-                      className="text-xs text-red-600 hover:underline"
+                      onClick={() => startEdit(emp)}
+                      className="text-xs text-brand hover:underline mr-3"
                     >
-                      Deactivate
+                      Edit
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => reactivate(emp)}
-                      className="text-xs text-emerald-700 hover:underline"
-                    >
-                      Reactivate
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+                    {emp.active ? (
+                      <button
+                        onClick={() => deactivate(emp)}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => reactivate(emp)}
+                        className="text-xs text-emerald-700 hover:underline"
+                      >
+                        Reactivate
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -145,9 +218,13 @@ function EmployeeForm({
   const [full_name, setName] = useState(employee?.full_name || "");
   const [email, setEmail] = useState(employee?.email || "");
   const [department, setDept] = useState(employee?.department || "");
-  const [annual_pto_days, setPto] = useState(employee?.annual_pto_days ?? 20);
+  const [start_date, setStartDate] = useState(employee?.start_date || "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Preview the calculated annual PTO based on the entered start date
+  const previewPtoDays = start_date ? calculatePtoDays(start_date) : null;
+  const previewYears = start_date ? yearsEmployed(start_date) : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -162,7 +239,7 @@ function EmployeeForm({
         full_name,
         email: email || null,
         department: department || null,
-        annual_pto_days: Number(annual_pto_days),
+        start_date: start_date || null,
       }),
     });
     setBusy(false);
@@ -206,15 +283,19 @@ function EmployeeForm({
             className="emp-input"
           />
         </FormField>
-        <FormField label="Annual PTO days">
+        <FormField label="Start date at Fatty Chem">
           <input
-            type="number"
-            min={0}
-            step={1}
-            value={annual_pto_days}
-            onChange={(e) => setPto(Number(e.target.value))}
+            type="date"
+            value={start_date}
+            onChange={(e) => setStartDate(e.target.value)}
             className="emp-input"
           />
+          {previewPtoDays !== null && previewYears !== null && (
+            <p className="text-xs text-slate-500 mt-1">
+              {previewYears} year{previewYears === 1 ? "" : "s"} of service ·
+              <span className="font-medium text-brand"> {previewPtoDays} PTO days</span>
+            </p>
+          )}
         </FormField>
       </div>
       {error && (

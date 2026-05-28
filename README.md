@@ -11,6 +11,8 @@ An internal web tool for tracking employee time-off requests.
 - Daily auto-approval: if a pending request's date passes without a decision, it's automatically marked confirmed.
 - Employee management: add, edit, deactivate.
 - Single shared admin password protects the app.
+- **Tenure-based PTO entitlement:** annual PTO days are calculated from each employee's start date — 5 days in years 1–4, 10 days in years 5–9, 15 days after year 10. Bumps happen on the anniversary date.
+- **PTO paid-out leave type:** employees can choose to be paid for PTO days without taking time off; the days are counted against their bucket but they still come to work, so the calendar treats them as "in" on those dates.
 
 ---
 

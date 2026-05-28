@@ -19,7 +19,7 @@ export type CalendarRequest = {
   id: number;
   employee_id: number;
   employee_name: string;
-  leave_type: "vacation" | "sick" | "personal" | "half_day";
+  leave_type: "vacation" | "sick" | "personal" | "half_day" | "pto_paid";
   start_date: string;
   end_date: string;
   status: "pending" | "confirmed" | "rejected" | "cancelled";
@@ -51,9 +51,14 @@ export default function Calendar({
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
   const visibleReqs = useMemo(() => {
-    // only show confirmed + pending on the calendar
+    // Calendar only shows actual out-of-office days.
+    //  - Skip pto_paid: employee is at work on those days, even though the
+    //    request counts against their PTO bucket.
+    //  - Show confirmed + pending only (hide rejected/cancelled).
     return requests.filter(
-      (r) => r.status === "confirmed" || r.status === "pending"
+      (r) =>
+        r.leave_type !== "pto_paid" &&
+        (r.status === "confirmed" || r.status === "pending")
     );
   }, [requests]);
 

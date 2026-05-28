@@ -7,6 +7,7 @@ const LEAVE_LABEL: Record<string, string> = {
   sick: "Sick day",
   personal: "Personal / Unpaid",
   half_day: "Half day",
+  pto_paid: "PTO paid out (working)",
 };
 
 function formatDate(d: string): string {

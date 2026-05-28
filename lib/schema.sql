@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS employees (
   full_name TEXT NOT NULL,
   email TEXT,
   department TEXT,
-  annual_pto_days INTEGER NOT NULL DEFAULT 20,
+  start_date TEXT,                            -- YYYY-MM-DD; tenure for PTO tier
+  annual_pto_days INTEGER NOT NULL DEFAULT 5, -- derived from start_date when set
   active INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -12,7 +13,7 @@ CREATE TABLE IF NOT EXISTS employees (
 CREATE TABLE IF NOT EXISTS requests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
-  leave_type TEXT NOT NULL CHECK (leave_type IN ('vacation','sick','personal','half_day')),
+  leave_type TEXT NOT NULL,                   -- vacation | sick | personal | half_day | pto_paid
   start_date TEXT NOT NULL,
   end_date TEXT NOT NULL,
   days_count REAL NOT NULL,

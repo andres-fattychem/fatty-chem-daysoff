@@ -7,7 +7,7 @@ type Row = {
   employee_id: number;
   employee_name: string;
   employee_department: string | null;
-  leave_type: "vacation" | "sick" | "personal" | "half_day";
+  leave_type: "vacation" | "sick" | "personal" | "half_day" | "pto_paid";
   start_date: string;
   end_date: string;
   days_count: number;
@@ -25,6 +25,7 @@ const TYPE_LABEL: Record<string, string> = {
   sick: "Sick",
   personal: "Personal",
   half_day: "Half day",
+  pto_paid: "PTO paid out",
 };
 
 const STATUS_STYLE: Record<string, string> = {

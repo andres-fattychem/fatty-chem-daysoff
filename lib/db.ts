@@ -16,12 +16,18 @@ export type Employee = {
   full_name: string;
   email: string | null;
   department: string | null;
+  start_date: string | null; // YYYY-MM-DD; used to derive annual_pto_days
   annual_pto_days: number;
   active: number; // 0 | 1
   created_at: string;
 };
 
-export type LeaveType = "vacation" | "sick" | "personal" | "half_day";
+export type LeaveType =
+  | "vacation"
+  | "sick"
+  | "personal"
+  | "half_day"
+  | "pto_paid"; // PTO paid out — counts against vacation bucket but employee still works
 export type LeaveStatus = "pending" | "confirmed" | "rejected" | "cancelled";
 
 export type Request = {

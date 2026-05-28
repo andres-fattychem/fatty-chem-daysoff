@@ -3,6 +3,7 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Nav from "@/components/Nav";
+import { calculatePtoDays } from "@/lib/pto";
 
 export const dynamic = "force-dynamic";
 
@@ -17,15 +18,18 @@ export default async function YTDPage({
   const year = searchParams.year || String(now.getFullYear());
 
   // Per-employee totals by leave_type for the year, counting only confirmed requests.
+  // vacation_days bucket includes: vacation + half_day + pto_paid (all count against the annual PTO allowance).
   const { rows } = await db().execute({
     sql: `
       SELECT
         e.id,
         e.full_name,
         e.department,
+        e.start_date,
         e.annual_pto_days,
         e.active,
-        COALESCE(SUM(CASE WHEN r.leave_type IN ('vacation','half_day') AND r.status='confirmed' THEN r.days_count END), 0) AS vacation_days,
+        COALESCE(SUM(CASE WHEN r.leave_type IN ('vacation','half_day','pto_paid') AND r.status='confirmed' THEN r.days_count END), 0) AS vacation_days,
+        COALESCE(SUM(CASE WHEN r.leave_type = 'pto_paid' AND r.status='confirmed' THEN r.days_count END), 0) AS pto_paid_days,
         COALESCE(SUM(CASE WHEN r.leave_type = 'sick' AND r.status='confirmed' THEN r.days_count END), 0) AS sick_days,
         COALESCE(SUM(CASE WHEN r.leave_type = 'personal' AND r.status='confirmed' THEN r.days_count END), 0) AS personal_days,
         COALESCE(SUM(CASE WHEN r.status='pending' THEN r.days_count END), 0) AS pending_days
@@ -33,7 +37,7 @@ export default async function YTDPage({
       LEFT JOIN requests r
         ON r.employee_id = e.id
         AND substr(r.start_date, 1, 4) = ?
-      GROUP BY e.id, e.full_name, e.department, e.annual_pto_days, e.active
+      GROUP BY e.id, e.full_name, e.department, e.start_date, e.annual_pto_days, e.active
       ORDER BY e.active DESC, e.full_name
     `,
     args: [year],
@@ -53,7 +57,8 @@ export default async function YTDPage({
             </h1>
             <p className="text-sm text-slate-500">
               Days taken per employee. Vacation column counts confirmed
-              vacation + half-day requests against the annual PTO bucket.
+              vacation, half-day, and PTO-paid-out requests against the
+              annual PTO bucket.
             </p>
           </div>
           <div className="flex gap-2">
@@ -102,7 +107,12 @@ export default async function YTDPage({
                 </tr>
               )}
               {rows.map((row: any) => {
-                const remaining = row.annual_pto_days - row.vacation_days;
+                // Use live-computed entitlement when start_date is set,
+                // so the YTD column auto-bumps when employees hit a tier.
+                const currentEntitlement = row.start_date
+                  ? calculatePtoDays(row.start_date)
+                  : row.annual_pto_days;
+                const remaining = currentEntitlement - row.vacation_days;
                 const remainingClass =
                   remaining < 0
                     ? "text-red-700 font-semibold"
@@ -132,10 +142,15 @@ export default async function YTDPage({
                       )}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">
-                      {row.vacation_days}
+                      <div>{row.vacation_days}</div>
+                      {row.pto_paid_days > 0 && (
+                        <div className="text-[11px] text-slate-500">
+                          incl. {row.pto_paid_days} paid out
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-slate-500">
-                      {row.annual_pto_days}
+                      {currentEntitlement}
                     </td>
                     <td
                       className={`px-4 py-3 text-right tabular-nums ${remainingClass}`}

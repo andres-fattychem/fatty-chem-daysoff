@@ -12,7 +12,7 @@ export default function NewRequestForm({
   const router = useRouter();
   const [employeeId, setEmployeeId] = useState<number | "">("");
   const [leaveType, setLeaveType] = useState<
-    "vacation" | "sick" | "personal" | "half_day"
+    "vacation" | "sick" | "personal" | "half_day" | "pto_paid"
   >("vacation");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -95,13 +95,14 @@ export default function NewRequestForm({
       </Field>
 
       <Field label="Leave type" required>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {(
             [
               ["vacation", "Vacation / PTO"],
               ["sick", "Sick"],
               ["personal", "Personal / Unpaid"],
               ["half_day", "Half day"],
+              ["pto_paid", "PTO paid out"],
             ] as const
           ).map(([val, lbl]) => (
             <label
@@ -123,6 +124,13 @@ export default function NewRequestForm({
             </label>
           ))}
         </div>
+        {leaveType === "pto_paid" && (
+          <p className="text-xs text-slate-500 mt-2 bg-slate-50 border border-slate-200 rounded p-2">
+            <strong>PTO paid out:</strong> employee is paid for these PTO days
+            but still comes to work. Counts against their annual PTO bucket
+            and does <em>not</em> appear on the calendar.
+          </p>
+        )}
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

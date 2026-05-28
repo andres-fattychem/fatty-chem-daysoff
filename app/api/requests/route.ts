@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-  const validTypes = ["vacation", "sick", "personal", "half_day"];
+  const validTypes = ["vacation", "sick", "personal", "half_day", "pto_paid"];
   if (!validTypes.includes(leave_type)) {
     return NextResponse.json({ error: "Invalid leave_type" }, { status: 400 });
   }
@@ -76,6 +76,8 @@ export async function POST(req: Request) {
     }
     days_count = 0.5;
   } else {
+    // pto_paid uses business-day counting same as vacation — it's just that
+    // the employee is at work on those days (calendar excludes them).
     days_count = businessDaysInclusive(start_date, end_date);
     if (days_count === 0) {
       return NextResponse.json(
