@@ -39,7 +39,9 @@ export async function PATCH(
     args: [status, decided_by || "admin (in-app)", id],
   });
 
-  // Notify if a pending request just got decided (approved or rejected)
+  // Notify if a pending request just got decided (approved or rejected).
+  // We AWAIT the promises here — fire-and-forget gets killed when Vercel's
+  // serverless function shuts down after the response is sent.
   if (
     wasPending &&
     (status === "confirmed" || status === "rejected") &&
@@ -52,7 +54,7 @@ export async function PATCH(
     const employee: any = empRes.rows[0];
     if (employee) {
       const updatedReq = { ...beforeRow, status };
-      Promise.all([
+      await Promise.allSettled([
         sendDecisionEmployeeEmail({
           request: updatedReq,
           employee,
@@ -64,9 +66,7 @@ export async function PATCH(
           newStatus: status,
           decidedVia: "in-app",
         }),
-      ]).catch(() => {
-        /* notifications best-effort */
-      });
+      ]);
     }
   }
 

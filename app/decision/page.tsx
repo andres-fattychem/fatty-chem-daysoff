@@ -84,11 +84,11 @@ export default async function DecisionPage({
     });
     const employee: any = empRes.rows[0];
 
-    // Fire notifications in parallel — failures here shouldn't block the
-    // confirmation page from rendering successfully.
+    // Send notifications. We AWAIT here — Vercel's serverless function may
+    // shut down once the page renders, killing any unawaited promises.
     if (employee) {
       const updatedReq = { ...reqRow, status: newStatus };
-      Promise.all([
+      await Promise.allSettled([
         sendDecisionEmployeeEmail({
           request: updatedReq,
           employee,
@@ -100,9 +100,7 @@ export default async function DecisionPage({
           newStatus,
           decidedVia: "email",
         }),
-      ]).catch(() => {
-        /* logging happens inside the email functions */
-      });
+      ]);
     }
 
     return Result({
