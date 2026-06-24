@@ -27,7 +27,7 @@ export async function GET(req: Request) {
                  e.department AS emp_department, e.annual_pto_days AS emp_pto,
                  e.active AS emp_active
           FROM requests r JOIN employees e ON e.id = r.employee_id
-          WHERE r.status = 'pending' AND r.start_date < date('now')`,
+          WHERE r.status = 'pending' AND r.start_date <= date('now')`,
     args: [],
   });
 
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
                 decided_by = 'auto-approved (date passed)',
                 auto_approved = 1
             WHERE status = 'pending'
-              AND start_date < date('now')`,
+              AND start_date <= date('now')`,
     args: [],
   });
 

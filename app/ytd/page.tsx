@@ -32,6 +32,7 @@ export default async function YTDPage({
         COALESCE(SUM(CASE WHEN r.leave_type = 'pto_paid' AND r.status='confirmed' THEN r.days_count END), 0) AS pto_paid_days,
         COALESCE(SUM(CASE WHEN r.leave_type = 'sick' AND r.status='confirmed' THEN r.days_count END), 0) AS sick_days,
         COALESCE(SUM(CASE WHEN r.leave_type = 'personal' AND r.status='confirmed' THEN r.days_count END), 0) AS personal_days,
+        COALESCE(SUM(CASE WHEN r.status='confirmed' THEN r.days_count END), 0) AS total_days,
         COALESCE(SUM(CASE WHEN r.status='pending' THEN r.days_count END), 0) AS pending_days
       FROM employees e
       LEFT JOIN requests r
@@ -92,6 +93,7 @@ export default async function YTDPage({
                 <th className="text-right px-4 py-3 font-medium">Remaining</th>
                 <th className="text-right px-4 py-3 font-medium">Sick</th>
                 <th className="text-right px-4 py-3 font-medium">Personal</th>
+                <th className="text-right px-4 py-3 font-medium">Total taken</th>
                 <th className="text-right px-4 py-3 font-medium">Pending</th>
               </tr>
             </thead>
@@ -99,7 +101,7 @@ export default async function YTDPage({
               {rows.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center text-slate-500 py-8"
                   >
                     No employees yet. Add some on the Employees page.
@@ -162,6 +164,9 @@ export default async function YTDPage({
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {row.personal_days}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums font-medium text-slate-900">
+                      {row.total_days}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-amber-700">
                       {row.pending_days || ""}
