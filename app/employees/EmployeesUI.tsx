@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   calculatePtoDays,
@@ -53,14 +53,21 @@ export default function EmployeesUI({ initial }: { initial: Employee[] }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  function scrollToForm() {
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  }
 
   function startNew() {
     setEditing(null);
     setShowForm(true);
+    scrollToForm();
   }
   function startEdit(emp: Employee) {
     setEditing(emp);
     setShowForm(true);
+    scrollToForm();
   }
   function done() {
     setShowForm(false);
@@ -99,13 +106,16 @@ export default function EmployeesUI({ initial }: { initial: Employee[] }) {
         </button>
       </div>
 
-      {showForm && (
-        <EmployeeForm
-          employee={editing}
-          onDone={done}
-          onCancel={() => setShowForm(false)}
-        />
-      )}
+      <div ref={formRef}>
+        {showForm && (
+          <EmployeeForm
+            key={editing ? editing.id : "new"}
+            employee={editing}
+            onDone={done}
+            onCancel={() => setShowForm(false)}
+          />
+        )}
+      </div>
 
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
